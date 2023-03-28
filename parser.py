@@ -20,7 +20,7 @@ def get_lst_prepod() -> list:
         if isinstance(i, bs4.element.Tag):
             d = i.text.split()
             lst.append([d[0], d[1], ''.join(d[3:]), i['value']])
-            # print([d[0], d[1], ''.join(d[3:]), i['value']])
+            #print([d[0], d[1], ''.join(d[3:]), i['value']])
     return lst
 
 def get_resp_prepod(value: int) -> dict:
@@ -47,6 +47,8 @@ def get_resp_prepod(value: int) -> dict:
                 place = i.find("span").find("em").text.split('ауд.')[0].replace('–', '').replace(',', '').lstrip()
                 group = i.find("div").find("span", {"class": "groups"}).text.split(':')[1]
                 l = [*d[0].split(), d[1].lstrip(), place, aut, group]
+                if len(l) == 5:
+                    l = [1] + l
                 p[key].append(l)
             else:
                 key = i.text
@@ -55,9 +57,4 @@ def get_resp_prepod(value: int) -> dict:
     return lst
 
 
-for key, item in get_resp_prepod(25).items():
-    print(key, end=': \n')
-    for key, item in item.items():
-        print(key, *item)
-        print()
-    print()
+

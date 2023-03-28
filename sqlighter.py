@@ -9,45 +9,52 @@ class SQLighter:
 
     def create_table(self):
         with self.connection:
-            self.cursor.execute('''CREATE TABLE IF NOT EXISTS TEACHERS (
-        						id		   INTEGER NOT NULL PRIMARY KEY,
+            self.cursor.execute("""CREATE TABLE IF NOT EXISTS TEACHERS (
+        						id		       INTEGER NOT NULL PRIMARY KEY,
         						last_name	   STRING,
-        						initials     STRING,
-        						post STRING,
-        						)''')
+        						initials       STRING,
+        						post           STRING,
+        						value_teachers INTEGER
+        						)""")
 
-    def add_teacher(self, last_name, initials, post):
+    def add_teacher(self, last_name, initials, post, value_teachers):
         with self.connection:
-            self.cursor.execute("INSERT INTO `TEACHERS` (`first_name`, `initials`, `post`) VALUES(?,?,?)",
-                                (last_name, initials, post))
+            self.cursor.execute("INSERT INTO `TEACHERS` (`last_name`, `initials`, `post`, `value_teachers`) VALUES(?,?,?,?)",
+                                (last_name, initials, post, value_teachers,))
 
     def delet_teacher(self, last_name, initials):
         with self.connection:
-            self.cursor.execute("DELETE FROM `TEACHERS` WHERE `last_name` = ? AND `initials` = ?", (last_name,initials))
+            self.cursor.execute("DELETE FROM `TEACHERS` WHERE `last_name` = ? AND `initials` = ?", (last_name,initials,))
 
     def create_timetable(self, id):
         with self.connection:
-            self.cursor.execute(f'''CREATE TABLE IF NOT EXISTS TIMETABLE_{id}  (
-        						id		   INTEGER NOT NULL PRIMARY KEY,
-        						weekday	   STRING,
+            sql = """CREATE TABLE IF NOT EXISTS TIMETABLE_""" + str(id) + """ (
+        						id		    INTEGER NOT NULL PRIMARY KEY,
+        						weekday	    STRING,
+        						number      STRING,
+        						priority    STRING,
+        						lesson      STRING,
         						subject     STRING,
-        						group STRING,
-        						priority STRING,
-        						)''')
+        						place       STRING,
+        						office      STRING,
+        						groups       STRING
+        						)"""
 
-    def add_timetable(self, id, weekday, subject, group, priority):
+            self.cursor.execute(sql)
+
+
+    def add_timetable(self, id, weekday, subject, group, priority, place, lesson, office, number):
         with self.connection:
-            self.cursor.execute(f"INSERT INTO `TIMETABLE_{id}` (`weekday`, `subject`, `group`, `priority`) VALUES(?,?,?, ?)",
-                                (weekday, subject, group, priority))
+            self.cursor.execute("INSERT INTO TIMETABLE_"+ str(id) +" (weekday, subject, groups, priority, place, lesson, office, number) VALUES(?,?,?,?,?,?,?,?)",
+                                (weekday, subject, group, priority, place, lesson, office, number))
 
     def get_id(self, last_name, initials, post=None):
         with self.connection:
             if post is None:
-                result = self.cursor.execute("SELECT id FROM `TEACHERS` WHERE `last_name` = ? AND `initials` = ?", (last_name,initials,)).fetchall()
-                return result
+                result = self.cursor.execute("SELECT id, value_teachers FROM TEACHERS WHERE last_name = ? AND initials = ?", (last_name, initials)).fetchall()
             else:
-                result = self.cursor.execute("SELECT id FROM `TEACHERS` WHERE `last_name` = ? AND `initials` = ? AND `post` = ?", (last_name, initials, post,)).fetchall()
-                return result
+                result = self.cursor.execute("SELECT id, value_tachers FROM TEACHERS WHERE last_name = ? AND initials = ? AND post = ?", (last_name, initials, post)).fetchall()
+        return result[0]
 
     def get_taecher(self):
         with self.connection:
@@ -56,5 +63,5 @@ class SQLighter:
 
     def get_timetable(self, id):
         with self.connection:
-            result = self.cursor.execute(f"SELECT * FROM `TIMETABLE_{id}`").fetchall()
+            result = self.cursor.execute(f"SELECT * FROM TIMETABLE_{id}").fetchall()
             return result
