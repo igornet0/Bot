@@ -40,13 +40,21 @@ async def get_timetable(message: types.Message, state: FSMContext):
 async def send_timetable(message: types.Message, state: FSMContext):
     response = message.text
     lst_response = response.split()
-    if lst_response[0].count('.') > 0:
-        en = lst_response[0]
-        las = lst_response[1]
-    else:
-        en = lst_response[1]
-        las = lst_response[0]
-    id, value = database.get_id(las, en)
+    try:
+        if lst_response[0].count('.') > 0:
+            en = lst_response[0]
+            las = lst_response[1]
+        else:
+            en = lst_response[1]
+            las = lst_response[0]
+    except Exception as e:
+        await message.answer("Не верно введён формат, повторите ввод")
+        return
+    l = database.get_id(las, en)
+    if not l:
+        await message.answer("Нет такого преподавателя")
+        return
+    id, value = l
     database.create_timetable(id)
     timetable = database.get_timetable(id)
     if not timetable:
@@ -57,8 +65,22 @@ async def send_timetable(message: types.Message, state: FSMContext):
                     database.add_timetable(id, key, i[2], i[-1], i[0], i[3], i[1], i[4], key1)
     timetable = database.get_timetable(id)
     s = ''
+    s_t = ''
+    s_tt = ''
+    for item in timetable:
+        if item[1] != s_t:
+            s += s_t + '\n' + s_tt
+            s_t = f"{item[1]}: \n"
+            p = '' if item[3] == '1' else item[3]
+            s_tt = f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}\n"
+        else:
+            s_t = f"{item[1]}: \n"
+            p = '' if item[3] == '1' else item[3]
+            s_tt = f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}"
+    s += s_t + '\n' + s_tt
+    await message.answer(s, reply_markup=kb.kb_start())
+    await state.finish()
 
-                             reply_markup=kb.back())
 @dp.message_handler(state=Stats.GetTimetable, content_types=types.ContentTypes.TEXT)
 async def get_timetable(message: types.Message, state: FSMContext):
     pass
