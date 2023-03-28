@@ -70,16 +70,22 @@ async def send_timetable(message: types.Message, state: FSMContext):
     s = ''
     s_t = ''
     s_tt = ''
+    s_ttt = ''
     for item in timetable:
-        if item[1] != s_t:
-            s += s_t + '\n' + s_tt
+        if f"{item[1]}: \n" != s_t:
+            if s_t:
+                s = s + s_t + s_tt + '\n'
             s_t = f"{item[1]}: \n"
             p = '' if item[3] == '1' else item[3]
+            s_ttt = f"{item[2]}"
             s_tt = f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}\n"
         else:
             p = '' if item[3] == '1' else item[3]
-            s_tt += f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}"
-    s += s_t + '\n' + s_tt
+            s_tt += f"{p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}\n"
+            if s_ttt != f"{item[2]}":
+                s_tt = f"{item[2]} \n " + s_tt
+                s_ttt = f"{item[2]}"
+    s = s + s_t + s_tt
     await message.answer(s, reply_markup=kb.kb_start())
     await state.finish()
 
