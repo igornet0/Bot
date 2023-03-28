@@ -39,6 +39,9 @@ async def get_timetable(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Stats.GetName, content_types=types.ContentTypes.TEXT)
 async def send_timetable(message: types.Message, state: FSMContext):
     response = message.text
+    if response == 'Назад':
+        await message.answer('иди нахуй Аня Беляева ты меня заебала я тебя любил но ты этого не оценил соси хуй тупая шмара', reply_markup=kb.kb_start())
+        await state.finish()
     lst_response = response.split()
     try:
         if lst_response[0].count('.') > 0:
@@ -74,9 +77,8 @@ async def send_timetable(message: types.Message, state: FSMContext):
             p = '' if item[3] == '1' else item[3]
             s_tt = f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}\n"
         else:
-            s_t = f"{item[1]}: \n"
             p = '' if item[3] == '1' else item[3]
-            s_tt = f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}"
+            s_tt += f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}"
     s += s_t + '\n' + s_tt
     await message.answer(s, reply_markup=kb.kb_start())
     await state.finish()
