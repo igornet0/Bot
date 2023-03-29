@@ -21,27 +21,33 @@ class Stats(StatesGroup):
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
-database = SQLighter('bd.db')
+database = SQLighter('db.db')
 
 @dp.message_handler(commands=["start"], content_types=types.ContentTypes.TEXT)
 async def start_command(message: types.Message, state: FSMContext):
+    #await bot.send_message(477406355,"Я готов любить и быть с тобой максимально долго, на сколько это возможно❤️‍🩹")
     await message.answer('Привет!', reply_markup=kb.kb_start())
 
 @dp.message_handler(content_types=types.ContentTypes.TEXT)
 async def get_timetable(message: types.Message, state: FSMContext):
     response = message.text.lower()
+    #await bot.send_message(477406355, "Я готов любить и быть с тобой максимально долго, на сколько это возможно❤️‍🩹")
     if response == 'расписание':
         await message.answer('Пришли мне фамилию и инициалы преподавателя, например Иванов И.И.',
                              reply_markup=kb.back())
         await Stats.GetName.set()
+    else:
+        await message.answer('Такой команды нет',
+                             reply_markup=kb.kb_start())
 
 
 @dp.message_handler(state=Stats.GetName, content_types=types.ContentTypes.TEXT)
 async def send_timetable(message: types.Message, state: FSMContext):
     response = message.text
-    if response == 'Назад':
+    if response.lower() == 'назад️':
         await message.answer('иди нахуй Аня Беляева ты меня заебала я тебя любил но ты этого не оценил соси хуй тупая шмара', reply_markup=kb.kb_start())
         await state.finish()
+        return
     lst_response = response.split()
     try:
         if lst_response[0].count('.') > 0:
@@ -55,9 +61,9 @@ async def send_timetable(message: types.Message, state: FSMContext):
         return
     l = database.get_id(las, en)
     if not l:
-        await message.answer("Нет такого преподавателя")
+        await message.answer("Нет такого преподавателя, повторите ввод")
         return
-    id, value = l
+    id, value = l[0]
     database.create_timetable(id)
     timetable = database.get_timetable(id)
     if not timetable:
@@ -72,23 +78,23 @@ async def send_timetable(message: types.Message, state: FSMContext):
     s_tt = ''
     s_ttt = ''
     for item in timetable:
-        if f"{item[1]}: \n" != s_t:
+        if f"📆{item[1]}: \n" != s_t:
             if s_t:
                 s = s + s_t + s_tt + "\n"
-            s_t = f"{item[1]}: \n"
-            p = "" if item[3].isdigit() else item[3]
-            s_ttt = f"{item[2]}"
-            s_tt = f"{item[2]} \n {p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}\n"
+            s_t = f"📆{item[1]}: \n"
+            p = "" if str(item[3]).isdigit() else item[3]
+            s_ttt = f"🕘{item[2]}"
+            s_tt = f"🕘{item[2]} \n *{p}{item[4]} {item[5]}* \n{item[6]},{item[7]} ({item[8]})\n\n"
         else:
-            p = "" if item[3].isdigit() else item[3]
-            s_tt_1 += f"{p}{item[4]} {item[5]} {item[6]} {item[7]} {item[8]}\n"
-            if s_ttt != f"{item[2]}":
-                s_tt_1 = f"{item[2]} \n " + s_tt_1
-                s_ttt = f"{item[2]}"
+            p = "" if str(item[3]).isdigit() else item[3]
+            s_tt_1 = f"*{p}{item[4]} {item[5]}* \n{item[6]},{item[7]} ({item[8]})\n\n"
+            if s_ttt != f"🕘{item[2]}":
+                s_tt_1 = f"🕘{item[2]} \n " + s_tt_1
+                s_ttt = f"🕘{item[2]}"
             s_tt += s_tt_1
 
     s = s + s_t + s_tt
-    await message.answer(s, reply_markup=kb.kb_start())
+    await message.answer(s, reply_markup=kb.kb_start(), parse_mode="Markdown")
     await state.finish()
 
 @dp.message_handler(state=Stats.GetTimetable, content_types=types.ContentTypes.TEXT)

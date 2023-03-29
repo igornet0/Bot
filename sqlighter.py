@@ -51,10 +51,10 @@ class SQLighter:
     def get_id(self, last_name, initials, post=None):
         with self.connection:
             if post is None:
-                result = self.cursor.execute("SELECT id, value_teachers FROM TEACHERS WHERE last_name = ? AND initials = ?", (last_name, initials)).fetchall()
+                result = self.cursor.execute("SELECT id, value_teachers last_name FROM TEACHERS WHERE last_name = ? AND initials = ?", (last_name, initials)).fetchall()
             else:
                 result = self.cursor.execute("SELECT id, value_tachers FROM TEACHERS WHERE last_name = ? AND initials = ? AND post = ?", (last_name, initials, post)).fetchall()
-        return result[0]
+        return result
 
     def get_taecher(self):
         with self.connection:
